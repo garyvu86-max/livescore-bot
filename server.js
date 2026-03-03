@@ -24,50 +24,40 @@ app.get("/livescore", async (req, res) => {
 
     const page = await browser.newPage();
 
-    await page.goto("https://www.livescore.com/en/", {
-      waitUntil: "domcontentloaded",
-      timeout: 0
+    let matchData = null;
+
+    // Bắt response JSON từ Livescore API
+    page.on("response", async (response) => {
+      const url = response.url();
+
+      if (url.includes("/api/") && url.includes("match")) {
+        try {
+          const json = await response.json();
+          matchData = json;
+        } catch (e) {}
+      }
     });
 
-    // Lấy JSON nội bộ của Next.js
-    const data = await page.evaluate(() => {
-      return window.__NEXT_DATA__;
+    await page.goto("https://www.livescore.com/en/", {
+      waitUntil: "domcontentloaded",
+      timeout: 0,
     });
+
+    // Chờ vài giây cho API load
+    await new Promise(r => setTimeout(r, 5000));
 
     await browser.close();
 
-    if (!data) {
-      return res.json({ error: "No data found" });
+    if (!matchData) {
+      return res.json({ error: "No match API captured" });
     }
 
-    // Duyệt structure để tìm match
-    const matches = [];
-
-    const stages =
-      data?.props?.pageProps?.initialData?.data?.Stages || [];
-
-    stages.forEach(stage => {
-      const leagueName = stage.Snm || stage.Cnm || "Unknown League";
-
-      stage.Events?.forEach(match => {
-        matches.push({
-          league: leagueName,
-          home: match.T1?.[0]?.Nm,
-          away: match.T2?.[0]?.Nm,
-          homeScore: match.Tr1,
-          awayScore: match.Tr2,
-          status: match.Eps
-        });
-      });
-    });
-
-    res.json(matches);
+    res.json(matchData);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 const PORT = process.env.PORT;
 
