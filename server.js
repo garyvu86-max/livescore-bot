@@ -45,7 +45,7 @@ app.get("/livescore", async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const response = await axios.get(
-      `https://v3.football.api-sports.io/fixtures?date=${today}`,
+      "https://v3.football.api-sports.io/fixtures?league=39&season=2023",
       {
         headers: {
           "x-apisports-key": process.env.FOOTBALL_API_KEY
