@@ -25,10 +25,10 @@ app.get("/livescore", async (req, res) => {
     const page = await browser.newPage();
 
     await page.goto("https://www.livescore.com/en/", {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
+      timeout: 0
     });
 
-    await new Promise(r => setTimeout(r, 8000));
 
     await browser.close();
 
