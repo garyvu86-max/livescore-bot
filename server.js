@@ -19,24 +19,9 @@ app.set('json spaces', 2);
 app.get("/", (req, res) => {
   res.send("Livescore Bot is running 🚀");
 });
-app.get("/livescore", async (req, res) => {
-  try {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-
-    const page = await browser.newPage();
-
-    let matchData = null;
-
-    page.on("response", async (response) => {
-      const url = response.url();
-
-      if (url.includes("prod-cdn-mev-api.livescore.com/v1/api/app/date/soccer")) {
-        try {
-          matchData = await response.json();
-        } catch (e) {}
-      }
-    });
-
+app.get("/livescore", (req, res) => {
+  res.send("ROUTE WORKING");
+});
     await page.goto("https://www.livescore.com/en/", {
       waitUntil: "networkidle2",
     });
