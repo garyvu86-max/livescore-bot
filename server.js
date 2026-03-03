@@ -1,9 +1,8 @@
+const express = require("express");
 const chromium = require("@sparticuz/chromium");
 const puppeteer = require("puppeteer-core");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const express = require("express");
 
-puppeteer.use(StealthPlugin());
+
 
 const app = express();
 app.set("json spaces", 2);
