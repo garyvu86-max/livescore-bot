@@ -16,12 +16,12 @@ function formatDateTime(value) {
 puppeteer.use(StealthPlugin());
 const app = express();
 app.set('json spaces', 2);
+app.get("/", (req, res) => {
+  res.send("Livescore Bot is running 🚀");
+});
 app.get("/livescore", async (req, res) => {
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox"]
-    });
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 
     const page = await browser.newPage();
 
