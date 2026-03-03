@@ -17,47 +17,28 @@ const axios = require("axios");
 
 app.get("/livescore", async (req, res) => {
   try {
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
+    const response = await axios.get(
+      "https://www.thesportsdb.com/api/v1/json/3/livescore.php?s=Soccer"
+    );
 
-    const dateStr = `${y}${m}${d}`;
+    const events = response.data?.events || [];
 
-    const url = `https://prod-public-api.livescore.com/v1/api/app/date/soccer/${dateStr}?locale=en&MD=1`;
-
-    const response = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0"
-      }
-    });
-
-    const stages = response.data?.Stages || [];
-    const matches = [];
-
-    stages.forEach(stage => {
-      const league = stage.Snm || stage.Cnm || "Unknown League";
-
-      stage.Events?.forEach(match => {
-        matches.push({
-          league,
-          home: match.T1?.[0]?.Nm,
-          away: match.T2?.[0]?.Nm,
-          homeScore: match.Tr1,
-          awayScore: match.Tr2,
-          status: match.Eps
-        });
-      });
-    });
+    const matches = events.map(match => ({
+      league: match.strLeague,
+      home: match.strHomeTeam,
+      away: match.strAwayTeam,
+      homeScore: match.intHomeScore,
+      awayScore: match.intAwayScore,
+      status: match.strStatus
+    }));
 
     res.json(matches);
 
   } catch (err) {
-    res.status(500).json({
-      error: err.response?.status || err.message
-    });
+    res.status(500).json({ error: err.message });
   }
 });
+
 const PORT = process.env.PORT;
 
 app.listen(PORT, "0.0.0.0", () => {
