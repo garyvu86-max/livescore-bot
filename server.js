@@ -13,46 +13,33 @@ app.get("/", (req, res) => {
 });
 
 // Livescore route
+const axios = require("axios");
+
 app.get("/livescore", async (req, res) => {
   try {
-    const browser = await puppeteer.launch({
-      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: true,
+    const response = await axios.get(
+      "https://prod-public-api.livescore.com/v1/api/app/date/soccer/20260303?locale=en&MD=1"
+    );
+
+    const stages = response.data?.Stages || [];
+    const matches = [];
+
+    stages.forEach(stage => {
+      const league = stage.Snm || stage.Cnm || "Unknown League";
+
+      stage.Events?.forEach(match => {
+        matches.push({
+          league,
+          home: match.T1?.[0]?.Nm,
+          away: match.T2?.[0]?.Nm,
+          homeScore: match.Tr1,
+          awayScore: match.Tr2,
+          status: match.Eps
+        });
+      });
     });
 
-    const page = await browser.newPage();
-
-    let matchData = null;
-
-    // Bắt response JSON từ Livescore API
-    page.on("response", async (response) => {
-      const url = response.url();
-
-      if (url.includes("/api/") && url.includes("match")) {
-        try {
-          const json = await response.json();
-          matchData = json;
-        } catch (e) {}
-      }
-    });
-
-    await page.goto("https://www.livescore.com/en/", {
-      waitUntil: "domcontentloaded",
-      timeout: 0,
-    });
-
-    // Chờ vài giây cho API load
-    await new Promise(r => setTimeout(r, 5000));
-
-    await browser.close();
-
-    if (!matchData) {
-      return res.json({ error: "No match API captured" });
-    }
-
-    res.json(matchData);
+    res.json(matches);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
