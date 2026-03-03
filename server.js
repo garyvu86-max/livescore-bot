@@ -45,7 +45,7 @@ app.get("/livescore", async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const response = await axios.get(
-      "https://v3.football.api-sports.io/status",
+      "https://v3.football.api-sports.io/fixtures?season=2026",
       {
         headers: {
           "x-apisports-key": process.env.FOOTBALL_API_KEY
@@ -54,6 +54,7 @@ app.get("/livescore", async (req, res) => {
     );
 
      console.log("TOTAL FIXTURES:", response.data.response.length);
+     console.log(JSON.stringify(response.data, null, 2));
 
     const matches = response.data.response.map(match => ({
       league: match.league.name,
