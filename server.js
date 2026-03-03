@@ -29,10 +29,39 @@ app.get("/livescore", async (req, res) => {
       timeout: 0
     });
 
+    // Lấy JSON nội bộ của Next.js
+    const data = await page.evaluate(() => {
+      return window.__NEXT_DATA__;
+    });
 
     await browser.close();
 
-    res.json({ message: "Puppeteer ran successfully" });
+    if (!data) {
+      return res.json({ error: "No data found" });
+    }
+
+    // Duyệt structure để tìm match
+    const matches = [];
+
+    const stages =
+      data?.props?.pageProps?.initialData?.data?.Stages || [];
+
+    stages.forEach(stage => {
+      const leagueName = stage.Snm || stage.Cnm || "Unknown League";
+
+      stage.Events?.forEach(match => {
+        matches.push({
+          league: leagueName,
+          home: match.T1?.[0]?.Nm,
+          away: match.T2?.[0]?.Nm,
+          homeScore: match.Tr1,
+          awayScore: match.Tr2,
+          status: match.Eps
+        });
+      });
+    });
+
+    res.json(matches);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
