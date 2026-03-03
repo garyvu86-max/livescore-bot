@@ -1,4 +1,5 @@
-const puppeteer = require("puppeteer-extra");
+const chromium = require("@sparticuz/chromium");
+const puppeteer = require("puppeteer-core");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const express = require("express");
 
