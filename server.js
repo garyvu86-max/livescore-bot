@@ -1,4 +1,4 @@
-const { google } = require("googleapis");
+ 	const { google } = require("googleapis");
 const express = require("express");
 const chromium = require("@sparticuz/chromium");
 const puppeteer = require("puppeteer-core");
@@ -53,6 +53,8 @@ app.get("/livescore", async (req, res) => {
       }
     );
 
+     console.log("TOTAL FIXTURES:", response.data.response.length);
+
     const matches = response.data.response.map(match => ({
       league: match.league.name,
       home: match.teams.home.name,
@@ -76,5 +78,4 @@ const PORT = process.env.PORT;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port " + PORT);
-  console.log("TOTAL FIXTURES:", response.data.response.length);
 });
