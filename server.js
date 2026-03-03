@@ -18,28 +18,32 @@ const axios = require("axios");
 app.get("/livescore", async (req, res) => {
   try {
     const response = await axios.get(
-      "https://www.thesportsdb.com/api/v1/json/123/livescore.php?s=Soccer"
+      "https://v3.football.api-sports.io/fixtures?live=all",
+      {
+        headers: {
+          "x-apisports-key": process.env.FOOTBALL_API_KEY
+        }
+      }
     );
 
-    const events = response.data?.events || [];
-
-    const matches = events.map(match => ({
-      league: match.strLeague,
-      home: match.strHomeTeam,
-      away: match.strAwayTeam,
-      homeScore: match.intHomeScore,
-      awayScore: match.intAwayScore,
-      status: match.strStatus
+    const matches = response.data.response.map(match => ({
+      league: match.league.name,
+      home: match.teams.home.name,
+      away: match.teams.away.name,
+      score: `${match.goals.home} - ${match.goals.away}`,
+      status: match.fixture.status.short
     }));
 
     res.json(matches);
 
   } catch (err) {
+    console.error(err.response?.data || err.message);
     res.status(500).json({
-      error: err.response?.status || err.message
+      error: err.response?.data || err.message
     });
   }
 });
+
 const PORT = process.env.PORT;
 
 app.listen(PORT, "0.0.0.0", () => {
