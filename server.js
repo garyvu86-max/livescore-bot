@@ -18,7 +18,7 @@ const axios = require("axios");
 app.get("/livescore", async (req, res) => {
   try {
     const response = await axios.get(
-      "https://www.thesportsdb.com/api/v1/json/3/livescore.php?s=Soccer"
+      "https://www.thesportsdb.com/api/v1/json/123/livescore.php?s=Soccer"
     );
 
     const events = response.data?.events || [];
@@ -35,10 +35,11 @@ app.get("/livescore", async (req, res) => {
     res.json(matches);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.response?.status || err.message
+    });
   }
 });
-
 const PORT = process.env.PORT;
 
 app.listen(PORT, "0.0.0.0", () => {
