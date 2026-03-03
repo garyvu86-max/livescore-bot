@@ -1,3 +1,4 @@
+const { google } = require("googleapis");
 const express = require("express");
 const chromium = require("@sparticuz/chromium");
 const puppeteer = require("puppeteer-core");
@@ -6,6 +7,31 @@ const puppeteer = require("puppeteer-core");
 
 const app = express();
 app.set("json spaces", 2);
+
+async function writeToSheet(matches) {
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const values = matches.map(m => [
+    m.league,
+    m.home,
+    m.away,
+    m.score,
+    m.status,
+    new Date().toLocaleString()
+  ]);
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: process.env.SHEET_ID,
+    range: "Sheet1!A:F",
+    valueInputOption: "RAW",
+    requestBody: { values }
+  });
+}	
 
 // Root route
 app.get("/", (req, res) => {
@@ -34,6 +60,7 @@ app.get("/livescore", async (req, res) => {
       status: match.fixture.status.short
     }));
 
+    await writeToSheet(matches);
     res.json(matches);
 
   } catch (err) {
